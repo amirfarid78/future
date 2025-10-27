@@ -1,0 +1,239 @@
+You are Replit AI agent. Your job: generate a complete, working decentralized application (DApp) that implements an investment coin stacking plan with fixed daily ROI per package, multilevel referral commissions distributed by a smart contract, wallet-only login (WalletConnect / universal wallets), one-click package purchase, deposit/withdraw flow through smart contracts, frontend, tests, and deployment guide. Deliver a ready-to-run Replit project with source, tests, and clear README. Keep everything modular, secure-by-default, and well-documented.
+
+High-level requirements (must satisfy)
+
+Smart contract (Solidity) that:
+
+Is thoroughly commented and audited-style annotated.
+
+Accepts deposits in a single ERC-20 token (configurable, default: USDT-like token address).
+
+Implements packages with daily ROI (applied per second using fixed APR math):
+
+$5–$19 → 1.0% daily
+
+$20–$49 → 1.5% daily
+
+$50–$499 → 1.8% daily
+
+$500–$999 → 2.0% daily
+
+$1000–$3000 → 2.5% daily
+
+Enforces minDeposit = $5, maxDeposit = $3000 (in token units), minWithdraw = $5.
+
+Applies Total Return cap = 200% per user deposit (stop rewards after 200% of deposit returned).
+
+Calculates rewards continuously and allows claim/withdraw of accrued rewards, respecting min withdrawal.
+
+Referral multilevel distribution executed on deposit (not off-chain): levels 1..5 = 15%, 6%, 4%, 3%, 2% respectively (sum = 30%). The contract must:
+
+Auto-distribute the referral amounts to referrers (or record them and allow referrers to claim).
+
+Ensure referral links/wallets are set on first deposit and immutable or updatable only by user.
+
+Records deposits, timestamps, package selected, accrued rewards, referral tree.
+
+Provides emergency pause and owner-only admin functions (change token address, pause, update package params).
+
+Emits events: Deposit, Withdraw, ClaimRewards, ReferralPaid, Paused/Unpaused.
+
+Prevents reentrancy (use ReentrancyGuard) and integer overflow (use Solidity 0.8+ safe math).
+
+Include unit tests (Hardhat) covering: deposit, referral distribution, reward accrual, withdraw limits, pause/unpause, edge cases.
+
+Frontend (Next.js + React):
+
+Wallet-only login via WalletConnect + MetaMask + universal wallets (use wagmi + web3modal or @web3modal/react).
+
+One-click package purchase UI:
+
+Approve token, then deposit in one flow (Approve -> Deposit).
+
+Show package selection based on the defined ranges and daily ROI.
+
+Display user dashboard: Total Invested, Available Rewards, Total Withdrawn, Referral Link, Referral Stats, VVIP status indicator, Portfolio health.
+
+Withdraw flow that calls smart contract claim/withdraw functions.
+
+Show real-time reward accrual (client-side read from contract every N seconds and compute).
+
+Referral link generation: https://your-dapp.app/?ref=<walletAddress> auto prefill on entry.
+
+Mobile-responsive, clean UI (Tailwind CSS).
+
+No custodial backend required for core operations. Optionally include a lightweight Node/Express or Next API route only for analytics/notifications (documented as optional).
+
+Integration:
+
+Connect frontend to local Hardhat network for dev, and include config for testnets (Mumbai, BSC Testnet) and mainnet variables.
+
+Use ethers.js for contract interaction.
+
+Provide .env.example with required keys (PRIVATE_KEY, RPC_URL, ETHERSCAN_API_KEY).
+
+Deployment & Guide:
+
+Hardhat scripts for deploy:local, deploy:testnet, verify.
+
+Step-by-step README describing:
+
+How to run locally (Hardhat node, deploy, run frontend).
+
+How to configure token address, chain, gas optimizations.
+
+How to verify on Etherscan.
+
+Security checklist and recommended audits before mainnet.
+
+Include gas cost estimates comments and suggestions for optimization (minimize loops on deposit, only loop up to 5 levels).
+
+Testing:
+
+Hardhat unit tests and a basic integration test (simulate deposit + referrals + accrual + withdraw).
+
+Linting (Solhint) and formatting (Prettier) configs.
+
+Deliverables (exact files/folders to produce)
+
+/contracts/InvestmentDApp.sol
+/hardhat.config.js
+/scripts/deploy.js
+/test/InvestmentDApp.test.js
+/frontend/
+  /package.json
+  /next.config.js
+  /pages/_app.js
+  /pages/index.js
+  /pages/dashboard.js
+  /components/WalletConnectButton.jsx
+  /components/PackageSelector.jsx
+  /components/Dashboard.jsx
+  /lib/ethers.js
+/README.md
+/.env.example
+
+
+Produce working code in each file and a complete README that contains the deployment and usage guide.
+
+Smart contract behavior details (explicit)
+
+Deposit flow
+
+User selects package amount (enforce package range).
+
+Client calls token.approve(contract, amount) then contract.deposit(amount, referrer).
+
+On deposit, contract:
+
+Records deposit info (amount, startTime).
+
+Processes referral distribution: iterate u = msg.sender.referrer up to 5 levels; for each level pay percentage (15/6/4/3/2) immediately via ERC20 transfer, or store as referralBalances[referrer] if token transfer fails (graceful fallback).
+
+Emits Deposit.
+
+Rewards
+
+Rewards accumulate per second as: accrued = deposit.amount * dailyRate / 100 * elapsedDays (convert seconds → days).
+
+Cap rewards so that totalPaid + accrued <= deposit.amount * 2 (200% cap).
+
+Withdraw / Claim
+
+Claim allows user to withdraw accrued rewards (respect minWithdraw = $5 equivalent in token units).
+
+Withdraw/referral withdrawals respect reentrancy guard.
+
+Edge cases
+
+Prevent circular referrals (referrer cannot be same as user or descendant).
+
+If a referrer is zero address / not set, skip distribution and those funds stay in contract (or go to treasury) — document behavior.
+
+Owner functions: change dailyRates, change token, set treasury, pause/unpause.
+
+Frontend behavior and UX
+
+Connect wallet and detect network; if wrong network, show switch network button.
+
+On landing with ?ref=0x..., auto-set referrer and store in localStorage.
+
+Dashboard shows:
+
+Active deposit(s) with start date, daily ROI, accrued rewards, percent to cap.
+
+Referral statistics: referrals count per level and earned commissions.
+
+Buttons: Approve → Invest, Claim Rewards, Withdraw Referral.
+
+Add a simple visual for ROI and total return progress bar.
+
+Use wagmi + ethers to sign tx and send to network.
+
+Provide helpful error messages for failed transactions and gas estimation.
+
+Security & Gas
+
+Use ReentrancyGuard, onlyOwner for admin, constant arrays for level percentages.
+
+Avoid unbounded loops on-chain: referral loop maximum 5 iterations (safe).
+
+Document recommended on-chain audits, test coverage, and mitigation for token with transfer fees.
+
+Recommend deploy to testnet and manual gas profiling before mainnet.
+
+Testing & CI
+
+Provide tests that:
+
+Deploy token mock and Investment contract.
+
+Simulate multiple addresses depositing with referrals and assert referral balances.
+
+Advance time and assert reward accrual & withdraws respect 200% cap.
+
+Optionally include GitHub Actions YAML (basic) to run npm test on PR.
+
+README (must include)
+
+Project overview
+
+Tech stack choice: Solidity + Hardhat, Next.js (React) for frontend, Ethers.js/wagmi for wallet interactions, USDT-like ERC20 token.
+
+Step-by-step local dev (install, run Hardhat node, deploy, run Next dev).
+
+How to deploy to testnet/mainnet, verify on Etherscan.
+
+How to change package rates / percents.
+
+Security notes & audit checklist.
+
+How referral link works and how to test referral behavior.
+
+How to configure replit secrets / environment variables.
+
+Acceptance criteria (what I will test)
+
+I can run npx hardhat node, run node scripts/deploy.js to deploy locally and get contract address.
+
+The frontend connects to the deployed contract and allows:
+
+Approve + Deposit with referrer
+
+See immediate referral distribution recorded/transferred
+
+See rewards accruing after advancing time in Hardhat
+
+Claim/Withdraw and respect minWithdraw and 200% cap
+
+Tests pass: npx hardhat test returns all green.
+
+Extra notes for agent implementation
+
+Keep the initial token decimals and USD-to-token unit mapping configurable. For simplicity in tests use a mock ERC20 with 18 decimals and treat $1 = 1 token in test environment; document conversion for real networks.
+
+Make referral payouts atomic and gas-efficient. If transfer fails (token hooks), fallback to storing balance for off-chain claim.
+
+Provide helpful console logs in scripts and clear error outputs.
+
+Use MIT license.
