@@ -214,7 +214,35 @@ export default function Dashboard() {
             <div className="grid lg:grid-cols-3 gap-6">
               {/* Active Investment */}
               <div className="lg:col-span-2 space-y-6">
-                <InvestmentCard investment={stats.activePackage} />
+                {stats.activePackage ? (
+                  <InvestmentCard investment={stats.activePackage} />
+                ) : (
+                  <Card className="glass border-primary/20">
+                    <CardContent className="p-12 text-center">
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="p-4 rounded-full bg-primary/10">
+                          <DollarSign className="h-8 w-8 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-semibold mb-2">No Active Investment</h3>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Start earning daily returns by making your first deposit
+                          </p>
+                          <Button 
+                            onClick={() => {
+                              const investTab = document.querySelector('[value="invest"]') as HTMLElement;
+                              investTab?.click();
+                            }}
+                            data-testid="button-start-investing"
+                          >
+                            Start Investing
+                            <ArrowUpRight className="ml-2 h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
                 
                 {/* Quick Actions */}
                 <Card className="glass border-primary/20">
