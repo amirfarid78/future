@@ -50,17 +50,17 @@ export default function Dashboard() {
   });
   
   const stats = {
-    totalInvested: userData?.totalDeposit ? parseFloat(formatEther(userData.totalDeposit)) : 0,
-    availableRewards: userData?.claimableReward ? parseFloat(formatEther(userData.claimableReward)) : 0,
-    totalWithdrawn: userData?.totalWithdrawn ? parseFloat(formatEther(userData.totalWithdrawn)) : 0,
-    referralBalance: userData?.referralBalance ? parseFloat(formatEther(userData.referralBalance)) : 0,
-    totalReferrals: userData?.referrals?.length || 0,
-    activePackage: userData?.totalDeposit && parseFloat(formatEther(userData.totalDeposit)) > 0 ? {
-      amount: parseFloat(formatEther(userData.totalDeposit)),
+    totalInvested: userData?.totalInvested ? parseFloat(userData.totalInvested) : 0,
+    availableRewards: userData?.availableRewards ? parseFloat(userData.availableRewards) : 0,
+    totalWithdrawn: userData?.totalWithdrawn ? parseFloat(userData.totalWithdrawn) : 0,
+    referralBalance: userData?.referralBalance ? parseFloat(userData.referralBalance) : 0,
+    totalReferrals: userData?.totalReferrals || 0,
+    activePackage: userData?.totalInvested && parseFloat(userData.totalInvested) > 0 ? {
+      amount: parseFloat(userData.totalInvested),
       dailyROI: 2.0, // This would come from package tier
       startDate: Date.now() - 15 * 24 * 60 * 60 * 1000,
-      totalClaimed: parseFloat(formatEther(userData.totalWithdrawn || "0")),
-      progress: Math.min((parseFloat(formatEther(userData.totalWithdrawn || "0")) / (parseFloat(formatEther(userData.totalDeposit)) * 2)) * 100, 100),
+      totalClaimed: parseFloat(userData.totalWithdrawn || "0"),
+      progress: Math.min((parseFloat(userData.totalWithdrawn || "0") / (parseFloat(userData.totalInvested) * 2)) * 100, 100),
     } : null,
   };
 
@@ -258,43 +258,52 @@ export default function Dashboard() {
                     <CardTitle className="text-lg">Portfolio Status</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Next ROI Drop</span>
-                        <Badge variant="outline" className="text-xs">
-                          <Clock className="h-3 w-3 mr-1" />
-                          2h 34m
-                        </Badge>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Daily Rate</span>
-                        <span className="font-semibold text-success">+{stats.activePackage.dailyROI}%</span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">VVIP Status</span>
-                        <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500">Diamond</Badge>
-                      </div>
-                    </div>
-                    
-                    <div className="pt-4 border-t border-border/50">
-                      <p className="text-xs text-muted-foreground mb-3">Minimum Withdrawal</p>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1">
-                          <Progress value={Math.min(100, (stats.availableRewards / 5) * 100)} className="h-2" />
+                    {stats.activePackage ? (
+                      <>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Next ROI Drop</span>
+                            <Badge variant="outline" className="text-xs">
+                              <Clock className="h-3 w-3 mr-1" />
+                              2h 34m
+                            </Badge>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Daily Rate</span>
+                            <span className="font-semibold text-success">+{stats.activePackage.dailyROI}%</span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">VVIP Status</span>
+                            <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500">Diamond</Badge>
+                          </div>
                         </div>
-                        <span className="text-xs font-medium">${stats.availableRewards.toFixed(2)} / $5.00</span>
-                      </div>
-                    </div>
+                        
+                        <div className="pt-4 border-t border-border/50">
+                          <p className="text-xs text-muted-foreground mb-3">Minimum Withdrawal</p>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1">
+                              <Progress value={Math.min(100, (stats.availableRewards / 5) * 100)} className="h-2" />
+                            </div>
+                            <span className="text-xs font-medium">${stats.availableRewards.toFixed(2)} / $5.00</span>
+                          </div>
+                        </div>
 
-                    <div className="pt-4 border-t border-border/50">
-                      <p className="text-xs text-muted-foreground mb-3">Progress to 200% Cap</p>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1">
-                          <Progress value={stats.activePackage.progress} className="h-2" />
+                        <div className="pt-4 border-t border-border/50">
+                          <p className="text-xs text-muted-foreground mb-3">Progress to 200% Cap</p>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1">
+                              <Progress value={stats.activePackage.progress} className="h-2" />
+                            </div>
+                            <span className="text-xs font-medium">{stats.activePackage.progress.toFixed(1)}%</span>
+                          </div>
                         </div>
-                        <span className="text-xs font-medium">{stats.activePackage.progress}%</span>
+                      </>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-sm text-muted-foreground mb-4">No active investment</p>
+                        <p className="text-xs text-muted-foreground">Make your first deposit to start earning</p>
                       </div>
-                    </div>
+                    )}
                   </CardContent>
                 </Card>
 
