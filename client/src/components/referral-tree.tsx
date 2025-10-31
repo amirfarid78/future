@@ -1,20 +1,31 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { REFERRAL_LEVELS } from "@shared/schema";
-import { Users, TrendingUp, Award } from "lucide-react";
+import { Users, TrendingUp, Award, DollarSign } from "lucide-react";
 
-export function ReferralTree() {
-  // Mock data - will be replaced with real data from smart contract
-  const referralData = [
-    { level: 1, count: 3, earned: 45.50 },
-    { level: 2, count: 8, earned: 12.30 },
-    { level: 3, count: 15, earned: 8.20 },
-    { level: 4, count: 12, earned: 4.50 },
-    { level: 5, count: 5, earned: 2.10 },
-  ];
+interface ReferralTreeProps {
+  userData?: {
+    referralsByLevel: number[];
+    referralBalance: string;
+    totalReferrals: number;
+  } | null;
+  onWithdraw?: () => void;
+  isWithdrawDisabled?: boolean;
+}
 
-  const totalReferrals = referralData.reduce((sum, level) => sum + level.count, 0);
-  const totalEarned = referralData.reduce((sum, level) => sum + level.earned, 0);
+export function ReferralTree({ userData, onWithdraw, isWithdrawDisabled }: ReferralTreeProps) {
+  // Use real blockchain data only - no fabricated calculations
+  const referralData = REFERRAL_LEVELS.map((level, index) => {
+    const count = userData?.referralsByLevel?.[index] || 0;
+    return {
+      level: level.level,
+      count,
+    };
+  });
+
+  const totalReferrals = userData?.totalReferrals || 0;
+  const totalEarned = parseFloat(userData?.referralBalance || "0");
 
   return (
     <div className="space-y-6">
@@ -27,7 +38,7 @@ export function ReferralTree() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Referrals</p>
-              <p className="text-2xl font-bold gradient-text from-primary to-accent">
+              <p className="text-2xl font-bold gradient-text from-primary to-accent" data-testid="text-total-referrals-tree">
                 {totalReferrals}
               </p>
             </div>
@@ -40,25 +51,43 @@ export function ReferralTree() {
               <TrendingUp className="h-6 w-6 text-success" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total Earned</p>
-              <p className="text-2xl font-bold text-success">
+              <p className="text-sm text-muted-foreground">Referral Balance</p>
+              <p className="text-2xl font-bold text-success" data-testid="text-referral-balance">
                 ${totalEarned.toFixed(2)}
               </p>
+              <p className="text-xs text-muted-foreground mt-1">Available to withdraw</p>
             </div>
           </CardContent>
         </Card>
 
         <Card className="glass border-accent/20">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-accent/10">
-              <Award className="h-6 w-6 text-accent" />
+          <CardContent className="p-6 flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-lg bg-accent/10">
+                <DollarSign className="h-6 w-6 text-accent" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Claim Rewards</p>
+                <p className="text-lg font-bold gradient-text from-accent to-primary">
+                  ${totalEarned.toFixed(2)}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Top Performer</p>
-              <p className="text-2xl font-bold gradient-text from-accent to-primary">
-                Level 1
+            <Button 
+              onClick={onWithdraw}
+              disabled={isWithdrawDisabled || totalEarned < 5}
+              className="w-full hover-elevate"
+              size="sm"
+              data-testid="button-claim-referral-rewards"
+            >
+              <DollarSign className="h-4 w-4 mr-2" />
+              Claim Referral Rewards
+            </Button>
+            {totalEarned < 5 && (
+              <p className="text-xs text-muted-foreground text-center">
+                Minimum $5 required
               </p>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -92,19 +121,19 @@ export function ReferralTree() {
                       <div className="flex items-center gap-2">
                         <span className="font-semibold">Level {level.level}</span>
                         <Badge variant="outline" className="text-xs">
-                          {level.percentage}%
+                          {level.percentage}% Commission
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {data.count} referral{data.count !== 1 ? 's' : ''}
+                        {data.count} direct referral{data.count !== 1 ? 's' : ''}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold text-success" data-testid={`text-level-${level.level}-earned`}>
-                      ${data.earned.toFixed(2)}
+                    <p className="text-2xl font-bold gradient-text from-primary to-accent" data-testid={`text-level-${level.level}-count`}>
+                      {data.count}
                     </p>
-                    <p className="text-xs text-muted-foreground">earned</p>
+                    <p className="text-xs text-muted-foreground">referrals</p>
                   </div>
                 </div>
 

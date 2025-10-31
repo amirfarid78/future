@@ -385,7 +385,14 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            <ReferralTree />
+            <ReferralTree 
+              userData={userData}
+              onWithdraw={() => { 
+                setWithdrawType("referral"); 
+                setShowWithdraw(true); 
+              }}
+              isWithdrawDisabled={isLoadingUser}
+            />
           </TabsContent>
         </Tabs>
       </div>
@@ -395,6 +402,9 @@ export default function Dashboard() {
         onOpenChange={setShowWithdraw}
         type={withdrawType}
         availableAmount={withdrawType === "rewards" ? stats.availableRewards : stats.referralBalance}
+        onSuccess={() => {
+          refetchUserData();
+        }}
       />
     </div>
   );
