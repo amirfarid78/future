@@ -59,6 +59,11 @@ export const connectWallet = async () => {
     if (!prov) throw new Error("Failed to get provider");
 
     const accounts = await prov.send("eth_requestAccounts", []);
+    
+    if (!accounts || accounts.length === 0) {
+      throw new Error("No accounts found. Please unlock your wallet.");
+    }
+
     const network = await prov.getNetwork();
 
     return {
@@ -67,7 +72,17 @@ export const connectWallet = async () => {
     };
   } catch (error: any) {
     console.error("Error connecting wallet:", error);
-    throw new Error(error.message || "Failed to connect wallet");
+    
+    // Handle specific MetaMask errors
+    if (error.code === 4001) {
+      throw new Error("Connection request rejected. Please try again.");
+    }
+    if (error.code === -32002) {
+      throw new Error("Connection request pending. Please check MetaMask.");
+    }
+    
+    // Preserve original error message
+    throw new Error(error.message || error.reason || "Failed to connect wallet");
   }
 };
 
