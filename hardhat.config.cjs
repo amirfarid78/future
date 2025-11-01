@@ -21,7 +21,7 @@ module.exports = {
       },
     },
     localhost: {
-      url: "http://127.0.0.1:8545",
+      url: "http://127.0.0.1:8080",
       chainId: 31337,
     },
     bscTestnet: {
