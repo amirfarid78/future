@@ -60,9 +60,9 @@ async function main() {
   console.log("📄 Deployment info saved to:", deploymentFile, "\n");
 
   // Display summary
-  console.log("=" . repeat(60));
+  console.log("=".repeat(60));
   console.log("🎉 DEPLOYMENT SUCCESSFUL!");
-  console.log("=" . repeat(60));
+  console.log("=".repeat(60));
   console.log("\n📋 Contract Addresses:");
   console.log("   MockUSDT:        ", usdtAddress);
   console.log("   InvestmentDApp:  ", investmentAddress);
@@ -72,7 +72,7 @@ async function main() {
   console.log("   1. Approve USDT:  usdt.approve(investmentAddress, amount)");
   console.log("   2. Make deposit:  investmentDApp.deposit(amount, referrer)");
   console.log("   3. Claim rewards: investmentDApp.claimRewards()");
-  console.log("=" . repeat(60), "\n");
+  console.log("=".repeat(60), "\n");
 
   // For local development, also create a frontend config file
   if (hre.network.name === "localhost" || hre.network.name === "hardhat") {
