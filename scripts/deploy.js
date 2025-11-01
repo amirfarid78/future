@@ -83,13 +83,13 @@ async function main() {
       VITE_RPC_URL: "http://127.0.0.1:8545",
     };
 
-    const envFile = path.join(__dirname, "../.env.local");
+    const envFile = path.join(__dirname, "../client/.env.local");
     const envContent = Object.entries(frontendConfig)
       .map(([key, value]) => `${key}=${value}`)
       .join("\n");
     
     fs.writeFileSync(envFile, envContent);
-    console.log("📝 Frontend config saved to .env.local\n");
+    console.log("📝 Frontend config saved to client/.env.local\n");
   }
 }
 
