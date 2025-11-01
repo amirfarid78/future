@@ -1,6 +1,8 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
-const { time } = require("@nomicfoundation/hardhat-network-helpers");
+import { expect } from "chai";
+import hre from "hardhat";
+import { time } from "@nomicfoundation/hardhat-network-helpers";
+
+const { ethers } = hre;
 
 describe("InvestmentDApp", function () {
   let usdt, investmentDApp;
